@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WaW Launcher</title>
+    <link rel="icon" href="/src-tauri/icons/icon.png" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main id="app" hidden>
+      <div class="tab-bar">
+        <div class="tabs" role="tablist" aria-label="Launcher">
+          <button
+            class="tab active"
+            role="tab"
+            id="tab-compile"
+            aria-selected="true"
+            aria-controls="compile-panel"
+            data-tab="compile"
+          >
+            Compile Level
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            id="tab-mod"
+            aria-selected="false"
+            aria-controls="mod-panel"
+            data-tab="mod"
+            tabindex="-1"
+          >
+            Mod Builder
+          </button>
+          <button
+            class="tab"
+            role="tab"
+            id="tab-run"
+            aria-selected="false"
+            aria-controls="run-panel"
+            data-tab="run"
+            tabindex="-1"
+          >
+            Run Game
+          </button>
+        </div>
+        <span id="app-version">WaW Launcher</span>
+      </div>
+      <section class="panel launcher">
+        <div class="applications">
+          <div class="tool-buttons" id="tools" aria-label="Applications"></div>
+          <label class="check"
+            ><input id="companions" type="checkbox" /> Use companion
+            apps</label
+          >
+          <button id="refresh">Refresh</button>
+        </div>
+        <p id="tool-mode" class="hint">
+          Original Modtools applications in bin. Build tools always use the
+          installed Modtools.
+        </p>
+
+        <section
+          id="compile-panel"
+          class="tab-content compile-layout"
+          role="tabpanel"
+          aria-labelledby="tab-compile"
+        >
+          <aside class="map-sidebar">
+            <label for="map-search">Maps</label>
+            <input
+              id="map-search"
+              type="search"
+              placeholder="Find a map…"
+              autocomplete="off"
+            />
+            <select id="maps" size="14" aria-label="Map source files"></select>
+            <div class="button-row">
+              <button id="create-map">Create map…</button
+              ><button id="delete-map">Delete map…</button>
+            </div>
+          </aside>
+          <div class="compile-options">
+            <fieldset>
+              <legend>Compile level</legend>
+              <div class="stage-list">
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_bsp" type="checkbox" />
+                    Compile BSP</label
+                  ><button id="bsp-options">BSP options…</button>
+                </div>
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_vis" type="checkbox" />
+                    Compile vis</label
+                  >
+                </div>
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_lights" type="checkbox" />
+                    Compile lights</label
+                  ><button id="light-options">Light options…</button>
+                </div>
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_paths" type="checkbox" />
+                    Connect paths</label
+                  >
+                </div>
+                <div>
+                  <label class="check"
+                    ><input
+                      data-setting="compile_reflections"
+                      type="checkbox"
+                    />
+                    Compile reflections</label
+                  >
+                </div>
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_bspinfo" type="checkbox" />
+                    BSP info</label
+                  >
+                </div>
+                <div>
+                  <label class="check"
+                    ><input data-setting="compile_buildffs" type="checkbox" />
+                    Build FastFiles</label
+                  >
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="compile-destination">
+              <legend>Map options</legend>
+              <label class="check"
+                ><input data-setting="compile_modenabled" type="checkbox" />
+                Mod-specific map</label
+              >
+              <select
+                data-setting="compile_modname"
+                id="compile-mod"
+                aria-label="Map mod"
+              ></select>
+              <label class="check"
+                ><input data-setting="compile_runafter" type="checkbox" /> Run
+                map after compile</label
+              >
+              <label class="check"
+                ><input data-setting="compile_useruntab" type="checkbox" /> Use
+                Run Game tab options</label
+              >
+              <label for="compile-run-options">Custom run options</label>
+              <input
+                id="compile-run-options"
+                data-setting="compile_runoptions"
+                type="text"
+                spellcheck="false"
+              />
+            </fieldset>
+            <fieldset class="grid-options">
+              <legend>Grid file</legend>
+              <label class="check"
+                ><input data-setting="compile_collectdots" type="checkbox" />
+                Models collect dots</label
+              >
+              <div class="button-row">
+                <button id="make-grid">Make new grid</button
+                ><button id="edit-grid">Edit existing grid</button>
+              </div>
+            </fieldset>
+            <div class="action-row">
+              <span id="selected-map" class="hint">Select a map.</span
+              ><button id="compile" class="primary">Compile level</button>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="mod-panel"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tab-mod"
+          hidden
+        >
+          <div class="mod-toolbar">
+            <label for="mod">Mod</label
+            ><select id="mod"></select>
+            <label class="check"
+              ><input data-setting="mod_buildsounds" type="checkbox" /> Build
+              sounds</label
+            >
+            <label class="check"
+              ><input data-setting="mod_verbose" type="checkbox" />
+              Verbose</label
+            >
+            <label class="check"
+              ><input data-setting="mod_buildff" type="checkbox" /> Build
+              mod.ff</label
+            >
+            <label class="check"
+              ><input data-setting="mod_buildiwd" type="checkbox" /> Build
+              IWD</label
+            >
+          </div>
+          <div class="mod-editors">
+            <fieldset class="file-section">
+              <legend>IWD file list</legend>
+              <div class="button-row">
+                <button id="check-files">Select all</button
+                ><button id="uncheck-files">Clear</button
+                ><span id="file-count" class="hint"></span>
+              </div>
+              <div id="file-tree" class="file-tree" tabindex="0"></div>
+            </fieldset>
+            <fieldset class="csv-section">
+              <legend>FastFile mod.csv</legend>
+              <textarea
+                id="mod-csv"
+                spellcheck="false"
+                aria-label="FastFile mod.csv contents"
+              ></textarea>
+            </fieldset>
+          </div>
+          <div class="action-row">
+            <span class="hint"
+              >Selected files are saved to the mod's .files list.</span
+            ><button id="save-mod">Save changes</button
+            ><button id="build-mod" class="primary">Build mod</button>
+          </div>
+        </section>
+
+        <section
+          id="run-panel"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tab-run"
+          hidden
+        >
+          <div class="run-layout">
+            <div>
+              <fieldset>
+                <legend>Game</legend>
+                <div class="button-row">
+                  <label class="check"
+                    ><input id="run-sp" type="radio" name="game" checked />
+                    SP</label
+                  >
+                  <label class="check"
+                    ><input id="run-mp" type="radio" name="game" /> MP</label
+                  >
+                </div>
+                <label for="run-mod">Mod</label
+                ><select id="run-mod">
+                  <option value="">raw</option>
+                </select>
+              </fieldset>
+              <fieldset>
+                <legend>Custom command line</legend>
+                <textarea
+                  id="run-custom"
+                  data-setting="run_custom"
+                  rows="5"
+                  spellcheck="false"
+                  aria-label="Custom game command line"
+                ></textarea>
+              </fieldset>
+            </div>
+            <fieldset>
+              <legend>Game options</legend>
+              <div id="dvars" class="dvars"></div>
+            </fieldset>
+          </div>
+          <label for="command-preview">Command line</label
+          ><textarea
+            id="command-preview"
+            rows="3"
+            readonly
+            aria-label="Game command line preview"
+          ></textarea>
+          <div class="action-row">
+            <span class="hint">Runs the installed World at War executable.</span
+            ><button id="run" class="primary">Run game</button>
+          </div>
+        </section>
+
+        <section class="console-section" aria-label="Build log">
+          <div class="console-toolbar">
+            <strong id="current-stage">Log</strong><span id="elapsed"></span
+            ><button id="copy-log">Copy log</button
+            ><button id="clear-log">Clear</button
+            ><button id="cancel" disabled>Cancel</button>
+          </div>
+          <pre id="log" tabindex="0" aria-label="Launcher output"></pre>
+        </section>
+        <p id="message" role="status"></p>
+      </section>
+    </main>
+    <footer id="footer" hidden>
+      <span id="status" role="status">Ready</span>
+      <div class="footer-tools">
+        <span id="environment"></span
+        ><button
+          id="about"
+          class="icon-button"
+          title="About"
+          aria-label="About WaW Launcher"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 11v6" />
+            <circle
+              cx="12"
+              cy="7.5"
+              r="0.9"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+    <dialog id="about-dialog" aria-labelledby="about-title">
+      <div class="dialog-title" id="about-title">About WaW Launcher</div>
+      <div class="dialog-body">
+        <p>An unofficial tool made for the World at War modding community.</p>
+        <p>
+          Compile levels, build mods and open the Modtools applications. Uses
+          your installed tools and the original Launcher's build workflow, with
+          fixes for confirmed Launcher bugs.
+        </p>
+        <p>
+          Requires World at War with Modtools already installed. It does not
+          install patches or replace the compilers. Companion applications are
+          optional and are launched from the game folder.
+        </p>
+        <p>
+          Independent of Treyarch, Activision and UGX. Built with JavaScript,
+          Vite, Rust and Tauri. Original Modtools and Launcher by Treyarch; see
+          ATTRIBUTION.md.
+        </p>
+        <p class="credit">Created by <strong>phil81334</strong>.</p>
+        <label for="repo-url">Source, instructions and releases</label
+        ><input
+          id="repo-url"
+          class="repo-url"
+          value="https://github.com/phil81334/waw-launcher"
+          readonly
+        />
+        <div class="dialog-actions">
+          <button data-close="about-dialog">Close</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="startup-error" aria-labelledby="startup-title">
+      <div class="dialog-title" id="startup-title">
+        World at War folder required
+      </div>
+      <div class="dialog-body">
+        <p id="startup-message"></p>
+        <div class="dialog-actions"><button id="quit">Close</button></div>
+      </div>
+    </dialog>
+    <dialog id="bsp-dialog" aria-labelledby="bsp-title">
+      <div class="dialog-title" id="bsp-title">BSP options</div>
+      <div class="dialog-body options-form">
+        <label class="check"
+          ><input data-setting="bspoptions_onlyents" type="checkbox" /> Only
+          entities</label
+        >
+        <div class="numeric-option">
+          <label class="check"
+            ><input data-setting="bspoptions_blocksize" type="checkbox" /> Block
+            size</label
+          ><input
+            data-setting="bspoptions_blocksize_val"
+            type="number"
+            min="0"
+            max="64"
+            step="0.01"
+            value="0"
+          />
+        </div>
+        <div class="numeric-option">
+          <label class="check"
+            ><input data-setting="bspoptions_samplescale" type="checkbox" />
+            Sample scale</label
+          ><input
+            data-setting="bspoptions_samplescale_val"
+            type="number"
+            min="0.01"
+            max="100"
+            step="0.01"
+            value="0"
+          />
+        </div>
+        <label class="check"
+          ><input data-setting="bspoptions_debuglightmaps" type="checkbox" />
+          Debug lightmaps</label
+        >
+        <label for="extra-bsp">Extra BSP options</label
+        ><input
+          id="extra-bsp"
+          data-setting="bspoptions_extraoptions"
+          type="text"
+          spellcheck="false"
+        />
+        <div class="dialog-actions">
+          <button data-options-cancel="bsp-dialog">Cancel</button
+          ><button class="primary" data-options-save="bsp-dialog">OK</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="light-dialog" aria-labelledby="light-title">
+      <div class="dialog-title" id="light-title">Light options</div>
+      <div class="dialog-body options-form">
+        <div class="button-row">
+          <label class="check"
+            ><input id="light-fast" type="radio" name="light-quality" checked />
+            Fast</label
+          ><label class="check"
+            ><input id="light-extra" type="radio" name="light-quality" />
+            Extra</label
+          >
+        </div>
+        <label class="check"
+          ><input data-setting="lightoptions_nomodelshadow" type="checkbox" />
+          No model shadows</label
+        ><label class="check"
+          ><input data-setting="lightoptions_verbose" type="checkbox" />
+          Verbose</label
+        >
+        <div class="numeric-option">
+          <label class="check"
+            ><input data-setting="lightoptions_traces" type="checkbox" />
+            Traces</label
+          ><input
+            data-setting="lightoptions_traces_val"
+            type="number"
+            min="0"
+            max="500"
+            step="1"
+            value="0"
+          />
+        </div>
+        <div class="numeric-option">
+          <label class="check"
+            ><input data-setting="lightoptions_maxbounces" type="checkbox" />
+            Max bounces</label
+          ><input
+            data-setting="lightoptions_maxbounces_val"
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            value="0"
+          />
+        </div>
+        <div class="numeric-option">
+          <label class="check"
+            ><input data-setting="lightoptions_jitter" type="checkbox" />
+            Jitter</label
+          ><input
+            data-setting="lightoptions_jitter_val"
+            type="number"
+            min="0"
+            max="4"
+            step="0.001"
+            value="0"
+          />
+        </div>
+        <div class="dialog-actions">
+          <button data-options-cancel="light-dialog">Cancel</button
+          ><button class="primary" data-options-save="light-dialog">OK</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="create-dialog" aria-labelledby="create-title">
+      <div class="dialog-title" id="create-title">Create map</div>
+      <div class="dialog-body options-form">
+        <label for="template">Map template</label
+        ><select id="template"></select
+        ><label for="new-map">Map name</label
+        ><input
+          id="new-map"
+          type="text"
+          placeholder="mapname"
+          maxlength="64"
+          spellcheck="false"
+        />
+        <p class="hint">
+          Uses the templates installed in bin/Launcher/map_templates.
+        </p>
+        <div class="dialog-actions">
+          <button data-close="create-dialog">Cancel</button
+          ><button id="confirm-create" class="primary">Create</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+      <div class="dialog-title" id="confirm-title"></div>
+      <div class="dialog-body">
+        <p id="confirm-message"></p>
+        <pre id="confirm-files" hidden></pre>
+        <div class="dialog-actions">
+          <button id="confirm-no">Cancel</button
+          ><button id="confirm-yes" class="primary">Continue</button>
+        </div>
+      </div>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
