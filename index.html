@@ -43,23 +43,21 @@
           >
             Run Game
           </button>
+          <button
+            class="tab"
+            role="tab"
+            id="tab-apps"
+            aria-selected="false"
+            aria-controls="apps-panel"
+            data-tab="apps"
+            tabindex="-1"
+          >
+            Apps
+          </button>
         </div>
         <span id="app-version">WaW Launcher</span>
       </div>
       <section class="panel launcher">
-        <div class="applications">
-          <div class="tool-buttons" id="tools" aria-label="Applications"></div>
-          <label class="check"
-            ><input id="companions" type="checkbox" /> Use companion
-            apps</label
-          >
-          <button id="refresh">Refresh</button>
-        </div>
-        <p id="tool-mode" class="hint">
-          Original Modtools applications in bin. Build tools always use the
-          installed Modtools.
-        </p>
-
         <section
           id="compile-panel"
           class="tab-content compile-layout"
@@ -282,6 +280,31 @@
             <span class="hint">Runs the installed World at War executable.</span
             ><button id="run" class="primary">Run game</button>
           </div>
+        </section>
+
+        <section
+          id="apps-panel"
+          class="tab-content"
+          role="tabpanel"
+          aria-labelledby="tab-apps"
+          hidden
+        >
+          <div class="applications">
+            <label class="check"
+              ><input id="companions" type="checkbox" /> Use my companion apps</label
+            >
+            <button id="refresh">Refresh lists</button>
+          </div>
+          <p id="tool-mode" class="hint"></p>
+          <div class="tool-buttons" id="tools" aria-label="Applications"></div>
+          <details class="setup-tools">
+            <summary>Modtools setup</summary>
+            <p class="hint">
+              Run the original Converter after a fresh Modtools installation.
+              This setup tool always uses bin/converter.exe, in either app mode.
+            </p>
+            <button id="converter">Run Converter</button>
+          </details>
         </section>
 
         <section class="console-section" aria-label="Build log">

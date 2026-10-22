@@ -26,11 +26,8 @@ pub struct JobState {
 pub struct Tool {
     pub id: String,
     pub label: String,
-    pub stock_exe: String,
-    pub companion_exe: String,
-    pub available: bool,
-    pub stock_available: bool,
-    pub companion_available: bool,
+    pub executable: String,
+    pub companion: bool,
 }
 
 #[derive(Serialize)]

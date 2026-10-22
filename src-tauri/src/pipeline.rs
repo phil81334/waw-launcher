@@ -5,6 +5,7 @@
 //! starting any processes, which keeps compatibility checks safe and repeatable.
 
 use crate::files::validate_name;
+use crate::tools;
 use crate::types::{JobRequest, JobState};
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -418,30 +419,8 @@ pub fn build_plan(root: &Path, request: &JobRequest) -> Result<Vec<Step>, String
             steps.push(Step::Process(run));
         }
         "tool" => {
-            let (stock, companion, label) = match request.tool_id.as_str() {
-                "radiant" => ("bin/CoDWaWRadiant.exe", "waw-radiant.exe", "Radiant"),
-                "effects" => ("bin/EffectsEd3.exe", "waw-fx-editor.exe", "Effects editor"),
-                "asset_manager" => (
-                    "bin/asset_manager.exe",
-                    "waw-asset-manager.exe",
-                    "Asset manager",
-                ),
-                "asset_viewer" => (
-                    "bin/AssetViewer.exe",
-                    "waw-model-viewer.exe",
-                    "Asset viewer",
-                ),
-                "converter" => ("bin/converter.exe", "", "Converter"),
-                _ => {
-                    return Err("Unknown application shortcut.".to_string());
-                }
-            };
-            if request.companions && companion.is_empty() {
-                return Err(
-                    "No companion converter is available; switch to stock tools.".to_string(),
-                );
-            }
-            let executable = if request.companions { companion } else { stock };
+            let application = tools::find(&request.tool_id, request.companions)
+                .ok_or("Unknown application shortcut.")?;
             let mut arguments = String::new();
             if request.tool_id == "radiant" && !request.map_name.is_empty() {
                 validate_name(&request.map_name)?;
@@ -456,11 +435,11 @@ pub fn build_plan(root: &Path, request: &JobRequest) -> Result<Vec<Step>, String
                     map_path.to_string_lossy().into_owned()
                 };
             }
-            if request.tool_id == "converter" && !request.companions {
+            if request.tool_id == "converter" {
                 arguments = "-nopause".to_string();
             }
-            let mut launch = process(root, executable, label, arguments);
-            launch.detached = request.tool_id != "converter" || request.companions;
+            let mut launch = process(root, application.executable, application.label, arguments);
+            launch.detached = request.tool_id != "converter";
             steps.push(Step::Process(launch));
         }
         "grid" => {

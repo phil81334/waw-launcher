@@ -1,6 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { version } from "../package.json";
 
 const element = (id) => document.getElementById(id);
 const desktop = isTauri();
@@ -47,12 +48,18 @@ function applyPendingCatalog() {
   updateRunPreview();
 }
 
-function message(text, error = false) {
+function message(text, error = false, warning = false) {
   element("message").textContent = text;
-  element("message").className = error ? "error" : "success";
+  let tone = "success";
+  if (error) {
+    tone = "error";
+  } else if (warning) {
+    tone = "warning";
+  }
+  element("message").className = tone;
 }
 
-function appendLog(text, error = false) {
+function appendLog(text, error = false, warning = false) {
   const log = element("log");
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 35;
   const line = document.createElement("span");
@@ -62,6 +69,8 @@ function appendLog(text, error = false) {
   }
   if (error) {
     line.className = "error";
+  } else if (warning) {
+    line.className = "warning";
   }
   log.append(line);
   if (atBottom) {
@@ -161,13 +170,6 @@ function updateDependencies() {
   element("build-mod").disabled = busy || !selectedMod;
   element("save-mod").disabled = busy || !selectedMod;
   element("create-map").disabled = busy || context.templates.length === 0;
-  if (element("companions").checked) {
-    for (const button of element("tools").querySelectorAll(
-      "button[data-unavailable]",
-    )) {
-      button.disabled = true;
-    }
-  }
 }
 
 function setBusy(value) {
@@ -375,22 +377,24 @@ function renderTools() {
   container.replaceChildren();
   const companions = element("companions").checked;
   for (const tool of context.tools) {
-    const button = document.createElement("button");
-    button.textContent = tool.label;
-    button.title = companions ? tool.companionExe : tool.stockExe;
-    if (companions && !tool.companionExe) {
-      button.disabled = true;
-      button.dataset.unavailable = "true";
-      button.title =
-        "No companion converter is available. Uncheck companion apps to use the original converter.";
+    if (tool.companion !== companions) {
+      continue;
     }
+    const button = document.createElement("button");
+    const label = document.createElement("span");
+    label.textContent = tool.label;
+    const filename = document.createElement("small");
+    filename.textContent = tool.executable;
+    button.append(label, filename);
+    button.title = tool.executable;
+    button.disabled = busy;
     button.addEventListener("click", () =>
       startJob("tool", { toolId: tool.id }),
     );
     container.append(button);
   }
   element("tool-mode").textContent = companions
-    ? "Companion applications in the game folder. Build tools always use the installed Modtools. Missing companion apps are reported when opened."
+    ? "Companion apps run from beside CoDWaW.exe. An app that is not installed shows a warning in the log. Build tools always use the original Modtools."
     : "Original Modtools applications in bin. Build tools always use the installed Modtools.";
 }
 
@@ -522,7 +526,7 @@ async function startJob(action, extra = {}) {
     element("status").textContent = "Working…";
     element("current-stage").textContent = "Starting…";
     message("");
-    await invoke("start_job", {
+    const warning = await invoke("start_job", {
       request: {
         action,
         mapName: selectedMap,
@@ -533,6 +537,13 @@ async function startJob(action, extra = {}) {
         ...extra,
       },
     });
+    if (warning) {
+      setBusy(false);
+      element("status").textContent = "Warning";
+      element("current-stage").textContent = "Log";
+      appendLog(warning, false, true);
+      message(warning, false, true);
+    }
   } catch (error) {
     setBusy(false);
     element("status").textContent = "Error";
@@ -719,42 +730,30 @@ function browserContext() {
   return {
     validRoot: true,
     development: true,
-    version: "0.1.0",
+    version,
     maps: ["mp_barebones", "nazi_zombie_tutorial"],
     mods: [],
     templates: [],
     zoneSources: [],
     tools: [
-      {
-        id: "radiant",
-        label: "Radiant",
-        stockExe: "bin/CoDWaWRadiant.exe",
-        companionExe: "waw-radiant.exe",
-      },
-      {
-        id: "effects",
-        label: "Effects Editor",
-        stockExe: "bin/EffectsEd3.exe",
-        companionExe: "waw-fx-editor.exe",
-      },
-      {
-        id: "asset_manager",
-        label: "Asset Manager",
-        stockExe: "bin/asset_manager.exe",
-        companionExe: "waw-asset-manager.exe",
-      },
-      {
-        id: "asset_viewer",
-        label: "Asset Viewer",
-        stockExe: "bin/AssetViewer.exe",
-        companionExe: "waw-model-viewer.exe",
-      },
-      {
-        id: "converter",
-        label: "Converter",
-        stockExe: "bin/converter.exe",
-        companionExe: "",
-      },
+      ...[
+        ["radiant", "Radiant", "bin/CoDWaWRadiant.exe"],
+        ["effects", "Effects Editor", "bin/EffectsEd3.exe"],
+        ["asset_manager", "Asset Manager", "bin/asset_manager.exe"],
+        ["asset_viewer", "Asset Viewer", "bin/AssetViewer.exe"],
+      ].map(([id, label, executable]) => ({ id, label, executable, companion: false })),
+      ...[
+        ["asset_manager", "WaW Asset Manager", "waw-asset-manager.exe"],
+        ["ff_extractor", "WaW FF Extractor", "waw-ff-extractor.exe"],
+        ["effects", "WaW FX Viewer", "waw-fx-viewer.exe"],
+        ["hud_editor", "WaW HUD Editor", "waw-hud-editor.exe"],
+        ["image_viewer", "WaW Image Viewer", "waw-image-viewer.exe"],
+        ["asset_viewer", "WaW Model Viewer", "waw-model-viewer.exe"],
+        ["radiant", "WaW Radiant", "waw-radiant.exe"],
+        ["script_placer", "WaW Script Placer", "waw-script-placer.exe"],
+        ["shader_editor", "WaW Shader Editor", "waw-shader-editor.exe"],
+        ["visual_scripter", "WaW Visual Scripter", "waw-visual-scripter.exe"],
+      ].map(([id, label, executable]) => ({ id, label, executable, companion: true })),
     ],
   };
 }
@@ -796,6 +795,9 @@ function bindEvents() {
   );
   element("refresh").addEventListener("click", refresh);
   element("companions").addEventListener("change", renderTools);
+  element("converter").addEventListener("click", () =>
+    startJob("tool", { toolId: "converter", companions: false }),
+  );
   element("compile").addEventListener("click", () => startJob("compile"));
   element("build-mod").addEventListener("click", () => startJob("build_mod"));
   element("run").addEventListener("click", () => startJob("run"));

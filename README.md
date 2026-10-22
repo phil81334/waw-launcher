@@ -8,6 +8,8 @@ It runs your installed Modtools executables with the original commands and stage
 
 ![WaW Launcher](images/waw-launcher.png)
 
+v0.1.0 shown; app shortcuts now live in the **Apps** tab.
+
 ## Download and run
 
 1. Install World at War and its Modtools in the same game folder.
@@ -21,9 +23,11 @@ You do not need Node.js, Rust or VS Code to use the EXE. Windows needs [WebView2
 - **Compile Level:** choose a map, check the stages you want, then compile. BSP and lighting options are beside their stages.
 - **Mod Builder:** choose a mod, select its IWD files, edit `mod.csv` if needed, then build the checked stages.
 - **Run Game:** choose SP or MP, a mod and any launch options. Values are editable; choose **(not set)** or use the adjacent **Clear** button to remove one.
-- **Use companion apps:** switches editor/viewer shortcuts to the matching WaW family apps in the game folder. Build tools still use the original Modtools. Missing apps are reported; nothing is downloaded.
+- **Apps:** four stock Modtools apps, or check **Use my companion apps** for the ten WaW family apps. Missing companion apps show a warning in the log; nothing is downloaded. **Modtools setup** keeps the original Converter separate and available in either mode. Build tools still use the original Modtools.
 
 Settings use the original `bin/Launcher/map_settings` folder. Mod file selections use `<mod>/<mod>.files`. Successful builds publish eligible FF/IWD/arena files to WaW's Local AppData folders, as the original Launcher does. Sound building processes the installation's aliases, not just the selected mod.
+
+**Build Sounds is wired up but has not yet been fully tested. A future update will address that testing.**
 
 Map and mod lists update automatically when folders/files are added, renamed or deleted. Normal build commands follow stock; confirmed broken controls are corrected, including Run Game's `+devmap` command. The other console variables keep `+set`.
 

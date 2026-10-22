@@ -1,6 +1,7 @@
 mod catalog;
 pub mod files;
 pub mod pipeline;
+mod tools;
 pub mod types;
 
 use std::collections::BTreeMap;
@@ -63,43 +64,21 @@ fn ensure_idle(state: &AppState) -> Result<(), String> {
 
 fn context(state: &AppState) -> Context {
     let error = ensure_root(state).err();
-    let tools = [
-        ("radiant", "Radiant", "CoDWaWRadiant.exe", "waw-radiant.exe"),
-        (
-            "effects",
-            "Effects editor",
-            "EffectsEd3.exe",
-            "waw-fx-editor.exe",
-        ),
-        (
-            "asset_manager",
-            "Asset manager",
-            "asset_manager.exe",
-            "waw-asset-manager.exe",
-        ),
-        (
-            "asset_viewer",
-            "Asset viewer",
-            "AssetViewer.exe",
-            "waw-model-viewer.exe",
-        ),
-        ("converter", "Converter", "converter.exe", ""),
-    ]
-    .iter()
-    .map(|(id, label, stock, companion)| {
-        let stock_available = state.root.join("bin").join(stock).is_file();
-        let companion_available = !companion.is_empty() && state.root.join(companion).is_file();
-        Tool {
-            id: id.to_string(),
-            label: label.to_string(),
-            stock_exe: stock.to_string(),
-            companion_exe: companion.to_string(),
-            available: stock_available,
-            stock_available,
-            companion_available,
-        }
-    })
-    .collect();
+    let tools = tools::STOCK_APPS
+        .iter()
+        .map(|application| (application, false))
+        .chain(
+            tools::COMPANION_APPS
+                .iter()
+                .map(|application| (application, true)),
+        )
+        .map(|(application, companion)| Tool {
+            id: application.id.into(),
+            label: application.label.into(),
+            executable: application.executable.into(),
+            companion,
+        })
+        .collect();
     let message = error.clone().unwrap_or_else(|| {
         if cfg!(debug_assertions) && !state.root.join("CoDWaW.exe").is_file() {
             "Development uses the local test folder. Install tools there or set .local/game-path.txt to an explicit Modtools copy.".into()
@@ -205,9 +184,20 @@ fn start_job(
     app: tauri::AppHandle,
     state: tauri::State<AppState>,
     request: JobRequest,
-) -> Result<(), String> {
+) -> Result<Option<String>, String> {
     ensure_root(&state)?;
-    pipeline::start(app, state.root.clone(), request, state.jobs.clone())
+    if request.action == "tool" && request.companions && request.tool_id != "converter" {
+        let application =
+            tools::find(&request.tool_id, true).ok_or("Unknown companion application.")?;
+        if !state.root.join(application.executable).is_file() {
+            return Ok(Some(format!(
+                "Warning: {} was not found beside CoDWaW.exe. Nothing was launched.",
+                application.executable
+            )));
+        }
+    }
+    pipeline::start(app, state.root.clone(), request, state.jobs.clone())?;
+    Ok(None)
 }
 
 #[tauri::command]
