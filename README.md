@@ -8,6 +8,8 @@ It runs your installed Modtools executables with the original commands and stage
 
 ![WaW Launcher v0.2.0](images/waw-launcher-v0.2.0.png)
 
+[Mod Builder](images/waw-launcher-v0.2.0-mod-builder-tab.png) · [Run Game](images/waw-launcher-v0.2.0-run-game-tab.png) · [Stock apps](images/waw-launcher-v0.2.0-apps-tab-stock.png) · [Companion apps](images/waw-launcher-v0.2.0-apps-tab-companion.png)
+
 ## Download and run
 
 1. Install World at War and its Modtools in the same game folder.
