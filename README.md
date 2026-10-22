@@ -6,9 +6,7 @@ The original World at War Modtools Launcher workflows with a new UI. Open the ed
 
 It runs your installed Modtools executables with the original commands and stage order. It does not replace the compilers, sound converter or IWD archiver. Confirmed original bugs are fixed: broken options, failed builds publishing old files, unsafe map deletion and settings losing comma values.
 
-![WaW Launcher](images/waw-launcher.png)
-
-v0.1.0 shown; app shortcuts now live in the **Apps** tab.
+![WaW Launcher v0.2.0](images/waw-launcher-v0.2.0.png)
 
 ## Download and run
 
